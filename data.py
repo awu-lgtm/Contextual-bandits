@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import json
 from contextualbandits.evaluation import evaluateFullyLabeled
 from sklearn.preprocessing import LabelBinarizer
+import numpy as np
+from tqdm import tqdm
 
 def preprocess(df: pd.DataFrame):
     # label_mapping = {}
@@ -54,23 +56,30 @@ def get_action(vw, context, actions):
     return actions[a], probs[a]
 
 
-def simulator_loop(vw: Workspace, df: pd.DataFrame, actions, label, learn):
-    cost_sum = 0
-    ctr = []
+def simulate_loop(model, X: pd.DataFrame, y, rewards, action_hist, start, end):
+    actions = model.predict(X[start:end,:]).astype('uint8')
+    rewards.append(y[np.arange(start, end), actions].sum())
+    new_actions_hist = np.concatenate([action_hist, actions])
+    model.fit(X[:end], new_actions_hist, y[np.arange(end), new_actions_hist])
 
-    for i, (_, row) in enumerate(df.iterrows()):
-        a, p = get_action(vw, row, actions)
-        cost = get_cost(row, label, a)
-        cost_sum += cost
+    return rewards, new_actions_hist
 
-        if learn:
-            vw_format = vw.parse(to_vw_format(row, actions, (a, cost, p)), LabelType.CONTEXTUAL_BANDIT)
-            for j in vw_format.iter_features():
-                print(j)
-            print(to_vw_format(row, actions, (a, cost, p)))
-            vw.learn(vw_format)
-        ctr.append(-1 * cost_sum/(i + 1))
-    return ctr
+def simulate(model, X, y, batch_size):
+    first_batch = X[:batch_size, :]
+    np.random.seed(1)
+    action_chosen = np.random.randint(7, size=batch_size)
+    rewards_received = y[np.arange(batch_size), action_chosen]
+
+    model.fit(X=first_batch, a=action_chosen, r=rewards_received)
+    act_hist = action_chosen
+    rewards = []
+
+    for i in tqdm(range(int(np.floor(X.shape[0]/batch_size)))):
+        batch_st = (i + 1) * batch_size
+        batch_end = (i + 2) * batch_size
+        batch_end = np.min([batch_end, X.shape[0]])
+        rewards, act_hist = simulate_loop(model, X, y, rewards, act_hist, batch_st, batch_end)
+    return rewards, act_hist
 
 def plot_ctr(ctr):
     plt.plot(range(1, len(ctr) + 1), ctr)
