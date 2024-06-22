@@ -2,6 +2,7 @@ from random import choices
 from vowpalwabbit import LabelType, Workspace
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 
 def get_cost(y: int, action: int):
     if y == action:
@@ -34,11 +35,25 @@ def simulate_once(model: Workspace, x: np.ndarray, y: int, A: list, learn: bool)
         model.learn(vw_format)
     return a, cost
 
+def shuffle(Xs: np.ndarray, ys: np.ndarray):
+    indices = np.random.permutation(len(Xs))
+    return Xs[indices], ys[indices]
+
 def simulate(model: Workspace, Xs: np.ndarray, ys: np.ndarray, A: list, learn=True):
     actions = []
     costs = []
-    for x, y in zip(Xs, ys):
+    
+    if not learn:
+        Xs, ys = shuffle(Xs, ys)
+    for x, y in tqdm(zip(Xs, ys), total=len(Xs)):
         a, cost = simulate_once(model, x, y, A, learn)
         actions.append(a)
         costs.append(cost)
     return actions, costs
+
+def evaluate(model: Workspace, Xs: np.ndarray, A: list):
+    actions = []
+    for x in Xs:
+        a, _ = get_action(model, x, A)
+        actions.append(a)
+    return actions
