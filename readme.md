@@ -49,4 +49,4 @@ The cost of an action was -1 if it was equal to the `NObeyesdad` label of the da
 The model was run on all of the training data. Costs were recorded at each step of the simulator and the negative of the moving average of the costs was calculated (plotted below).
 <center><img src="images/average_costs.png" width="600"/> </center>
 
-The final average regret was calculated as `1 - (-average_cost) = 0.274`.
+The final average regret was calculated as `1 - (-average_cost) = 0.260`.
