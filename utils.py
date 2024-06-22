@@ -12,8 +12,8 @@ def preprocess(
     df: pd.DataFrame,
     x_encoder: OrdinalEncoder = None,
     y_encoder: LabelEncoder = None,
-    x_scaler: RobustScaler = None,
     test=False,
+    x_scaler: RobustScaler = None,
     scale=False,
 ):
     if not test:
@@ -26,6 +26,9 @@ def preprocess(
     X = feature_engineering(X)
     if scale:
         X = scale_x(X, x_scaler)
+        if not test:
+            return X, y, x_encoder, x_scaler, y_encoder
+        return X, x_encoder, x_scaler, y_encoder
 
     if not test:
         return X, y, x_encoder, y_encoder
