@@ -61,7 +61,7 @@ def feature_engineering(X: pd.DataFrame):
     X["Age_group"] = group_series(X["Age"], [10, 20, 30, 40, 50, 60, 70])
     return X
 
-def group_series(series: pd.Series, bounds):
+def group_series(series: pd.Series, bounds: list[int]):
     labels = list(range(len(bounds)))
     conditions = [series < bound for bound in bounds]
     return np.select(conditions, labels, len(labels))
@@ -81,7 +81,7 @@ def get_num_rows_cols(total: int):
     num_cols = total//num_rows
     return num_rows, num_cols
 
-def get_ax(i: int, axes, num_rows, num_cols):
+def get_ax(i: int, axes, num_rows: int, num_cols: int):
     if num_cols == 1 & num_rows == 1:
         ax = axes
     elif num_cols == 1:
