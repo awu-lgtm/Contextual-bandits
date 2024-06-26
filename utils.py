@@ -161,3 +161,22 @@ def get_top_correlations(df: pd.DataFrame, threshold: 0.9):
 
 def plot_correlation(df: pd.DataFrame):
     sns.heatmap(df.corr())
+
+
+def make_partitions(total: int, num_partitions: int):
+    length = total // num_partitions
+    partitions = [length * i for i in range(num_partitions + 1)]
+    if total % num_partitions != 0:
+        partitions.append(total)
+    return partitions
+
+
+def iter_partitions(total: int, num_partitions):
+    partitions = make_partitions(total, num_partitions)
+    for i in range(1, len(partitions)):
+        yield partitions[i - 1], partitions[i]
+
+
+def iter_parquets(paths: list[str]):
+    for path in paths:
+        yield pd.read_parquet(path)

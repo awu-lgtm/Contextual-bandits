@@ -3,6 +3,11 @@ from vowpalwabbit import LabelType, Workspace
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
+from typing import TypeAlias
+
+Action: TypeAlias = int
+Cost: TypeAlias = int
+Prob: TypeAlias = float
 
 
 def get_cost(y: int, action: int):
@@ -11,7 +16,7 @@ def get_cost(y: int, action: int):
     return 0
 
 
-def to_vw_format(context: pd.Series, label=None):
+def to_vw_format(context: pd.Series, label: tuple[Action, Cost, Prob] = None):
     string = ""
     if label is not None:
         action, cost, prob = label
@@ -20,6 +25,33 @@ def to_vw_format(context: pd.Series, label=None):
     for feature in context:
         string += f"{feature} "
     return string
+
+
+def series_to_vw_format(series: pd.Series, y_name: str, cost_name: str, prob_name: str):
+    y, cost, prob = series[y_name], series[cost_name], series[prob_name]
+    context = series.drop(labels=[y_name, cost_name, prob_name])
+    return to_vw_format(context, (y, cost, prob))
+
+
+def df_to_vw_format(df: pd.DataFrame, y_name: str, cost_name: str, prob_name: str):
+    format_fn = lambda series: series_to_vw_format(series, y_name, cost_name, prob_name)
+    df = df.apply(format_fn, axis=1)
+    return df
+
+
+def df_to_dat(
+    df: pd.DataFrame,
+    y_name: str,
+    cost_name: str,
+    prob_name: str,
+    save_path: str,
+    mode="a",
+):
+    df: pd.Series = df_to_vw_format(df, y_name, cost_name, prob_name)
+    with open(save_path, mode) as f:
+        for _, v in df.items():
+            f.write(v)
+            f.write("\n")
 
 
 def get_action(vw: Workspace, x: np.ndarray, A: list):
