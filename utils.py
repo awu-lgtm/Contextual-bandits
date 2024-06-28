@@ -92,7 +92,7 @@ def costs_to_moving_avg(costs: list):
     avg_costs = []
     for i, cost in enumerate(costs):
         total_cost += cost
-        avg_costs.append(-total_cost / (i + 1))
+        avg_costs.append(total_cost / (i + 1))
     return avg_costs
 
 
@@ -137,7 +137,7 @@ def plot_average_costs(avg_costs: list):
     plt.xlabel("iteration", fontsize=14)
     plt.ylabel("moving average cost", fontsize=14)
     plt.title("moving average cost vs iteration")
-    plt.ylim([0, 1])
+    plt.ylim([-1, 0])
 
 
 def print_stats(df: pd.DataFrame):

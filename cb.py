@@ -27,14 +27,61 @@ def to_vw_format(context: pd.Series, label: tuple[Action, Cost, Prob] = None):
     return string
 
 
+def to_vw_adf_format(
+    context: pd.Series,
+    action_context: pd.DataFrame = None,
+    label: tuple[Action, Cost, Prob] = None,
+):
+    if label is not None:
+        a, cost, prob = label
+    string = "shared | "
+    for k, v in context.items():
+        string += f"{k}={v} "
+    string += "\n"
+    for i, row in action_context.iterrows():
+        if i == a:
+            string += f"0:{cost}:{prob}"
+        string += " | "
+        for k, v in row.items():
+            string += f"{k}={v} "
+        string += "\n"
+    return string
+
+
 def series_to_vw_format(series: pd.Series, y_name: str, cost_name: str, prob_name: str):
     y, cost, prob = series[y_name], series[cost_name], series[prob_name]
     context = series.drop(labels=[y_name, cost_name, prob_name])
     return to_vw_format(context, (y, cost, prob))
 
 
+def series_to_vw_adf_format(
+    series: pd.Series,
+    action_context: pd.DataFrame,
+    y_name: str,
+    cost_name: str,
+    prob_name: str,
+):
+    y, cost, prob = series[y_name], series[cost_name], series[prob_name]
+    context = series.drop(labels=[y_name, cost_name, prob_name])
+    return to_vw_adf_format(context, action_context, (y, cost, prob))
+
+
 def df_to_vw_format(df: pd.DataFrame, y_name: str, cost_name: str, prob_name: str):
     format_fn = lambda series: series_to_vw_format(series, y_name, cost_name, prob_name)
+    df = df.apply(format_fn, axis=1)
+    return df
+
+
+def df_to_vw_adf_format(
+    df: pd.DataFrame,
+    action_context: pd.Series,
+    y_name: str,
+    cost_name: str,
+    prob_name: str,
+):
+    format_fn = lambda series: series_to_vw_adf_format(
+        series, action_context, y_name, cost_name, prob_name
+    )
     df = df.apply(format_fn, axis=1)
     return df
 
@@ -48,6 +95,24 @@ def df_to_dat(
     mode="a",
 ):
     df: pd.Series = df_to_vw_format(df, y_name, cost_name, prob_name)
+    with open(save_path, mode) as f:
+        for _, v in df.items():
+            f.write(v)
+            f.write("\n")
+
+
+def df_to_adf_dat(
+    df: pd.DataFrame,
+    action_context: pd.DataFrame,
+    y_name: str,
+    cost_name: str,
+    prob_name: str,
+    save_path: str,
+    mode="a",
+):
+    df: pd.Series = df_to_vw_adf_format(
+        df, action_context, y_name, cost_name, prob_name
+    )
     with open(save_path, mode) as f:
         for _, v in df.items():
             f.write(v)
@@ -69,6 +134,7 @@ def simulate_once(model: Workspace, x: np.ndarray, y: int, A: list, learn: bool)
         label = (a, cost, p)
         vw_format = model.parse(to_vw_format(x, label), LabelType.CONTEXTUAL_BANDIT)
         model.learn(vw_format)
+        model.finish_example(vw_format)
     return a, cost
 
 
