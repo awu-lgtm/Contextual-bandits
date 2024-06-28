@@ -64,6 +64,9 @@ For large action space (LAS) enviornments, `Vowpal Wabbit` provides a LAS algori
 ## Generalization ##
 This analysis will likely generalize well to environments where some features are highly associated with target actions. In harder environments, the bandits model will likely have worse regret (with the same amount of iterations) and more complex exploration strategies will need to be used (as discussed previously). In general, we have confidence that we would be able to create a bandits model that works well on a new environment, although it may take more work experimenting with exploration strategies.
 
+### Benchmarking ###
+In this analysis, we compared our model to supervised learning models. In general, to evaluate the performance of our policy, we could compare it to a standard approach in the domain. In the below offline setting section, we use a logged dataset created from another policy to evaluate our contextual bandits model. Another strategy could be to employ our model and a standard approach at the same time and see if our model adds value (by comparing metrics like cost). If there is no standard approach, we could use a control group instead like a random policy.
+
 # Offline setting: Open bandit dataset #
 
 ## Summary ##
@@ -72,7 +75,7 @@ Contextual bandits was applied on an offline bandits dataset. The trained policy
 ## Data ##
 Open bandit dataset was collected by ZOZO (Japanese fashion e-commerce company) over 7-days in 2019. The company uses MAB algorithms to recommend clothing to items on their website. Two policies were used during the data collection: Bernoulli Thompson Sampling and pure random. An item would be recommended by one of the two policies and whether or not it was clicked was recorded. Furthermore, user data and other relevant information was recorded (to use as feature for contextual bandits). ZOZO also provides 4 additional features for each item.
 
-The data is split by policy and also by item category: all, men's, and women's. We focused on Bernoulli Thompson Sampling and all items. Bernoulli Thompson Sampling was chosen because it had better ctr (click-through rate) (0.50% vs 0.35%) than random, so it would provide better quality data. All was chosen as it seems to be a more complex environment since it has a larger action space. This subset of data features 80 possible items to recommend (80 actions) and 12,168,084 samples. In consideration of compute time, only the last 1,168,084 were used, with the hope that the original policy would perform better after the first 11,000,000 samples.
+The data is split by policy and also by item category: all, men's, and women's. We focused on Bernoulli Thompson Sampling and all items. Bernoulli Thompson Sampling was chosen because it had better CTR (click-through rate) (0.50% vs 0.35%) than random, so it would provide better quality data. All was chosen as it seems to be a more complex environment since it has a larger action space. This subset of data features 80 possible items to recommend (80 actions) and 12,168,084 samples. In consideration of compute time, only the last 1,168,084 were used, with the hope that the original policy would perform better after the first 11,000,000 samples.
 
 ## Model ##
 The bandits model used was `Vowpal Wabbit` `cb_adf`. Adf (action dependent features) supports rich action features, which was why it was chosen. IPS (inverse propensity sampling), DR (doubly robust), and MTR (multi-task regression) estimators were all chosen as estimators. IPS and DR are both unbiased estimators of reward. Furthermore, DR is an extension of IPS in combination with regression and has lower variance than IPS. As a result, the loss calculated by progressive validation with DR is likely more accurate than with IPS.
@@ -86,10 +89,12 @@ The model was trained with one pass on the subsampled dataset. The dataset was i
 ## Off Policy Evaluation ##
 Off policy evaluation was done with `Vowpal Wabbit`'s progressive validation. `Vowpal Wabbit` uses the chosen model estimator to calculate an estimated reward for actions predicted by the model. As stated in the summary, the average loss was 0.691 and 0.941 for IPS and DR respectively. DR is probably a more accurate measure. In comparison, we calculated the average cost of the our subset of the dataset to be 0.995. 
 
-Both estimated losses were lower than the original policy, so we would expect both IPS and DR models to perform better if they were used instead.
+Here, total cost is the amount of people that do not click on the item recommended by the policy and the average cost is the proportion of people who do not click on the recommended item. The average losses are the predicted average costs of our models if our models were used instead of the Bernoulli Thompson Sampling policy during original data collection. 
+
+CTR, the proportion of people who click on the recommended item, is `(1 - average_cost) * 100`. Therefore, the CTR of Bernoulli Thompson Sampling on our subset of the data is 0.5%. Accordingly, the predicted CTRs are 30.9% and 4.9% for IPS and DR respectively. Using the DR CTR, this is about 10x amount of people clicking on the recommended item. Since both CTRs are higher, we would expect both IPS and DR models to perform better if they were used instead during the original data collection instead of Bernoulli Thompson Sampling.
 
 ## Flaws and Further Improvements ##
-Utilizing the full dataset will probably allow us to obtain a better estimate of performance of our model on the dataset. The entire dataset has low ctr and hence, sparse reward. The subset we used has of course even less instances of reward. 
+Utilizing the full dataset will probably allow us to obtain a better estimate of performance of our model on the dataset. The entire dataset has low CTR and hence, sparse reward. The subset we used has of course even less instances of reward. 
 
 It will also be interesting to see if there are any algorithms that handle sparse reward better and if the LAS algorithm mentioned in the first section could be used.
 
