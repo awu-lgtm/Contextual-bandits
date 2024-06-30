@@ -134,11 +134,18 @@ def plot_numerical_distr(df: pd.DataFrame, cols: list[str], figsize: tuple[int, 
 
 def plot_average_costs(avg_costs: list):
     plt.plot(range(1, len(avg_costs) + 1), avg_costs)
-    plt.xlabel("iteration", fontsize=14)
-    plt.ylabel("moving average cost", fontsize=14)
+    plt.xlabel("iteration")
+    plt.ylabel("moving average cost")
     plt.title("moving average cost vs iteration")
     plt.ylim([-1, 0])
 
+def plot_sliding_window(costs: list, size=200):
+    avg_costs = np.convolve(costs, np.ones(size)/size, mode='valid')
+    plt.plot(range(size, len(costs) + 1), avg_costs)
+    plt.xlabel("iteration")
+    plt.ylabel(f"sliding window {size} average cost")
+    plt.title(f"sliding window {size} average cost vs iteration")
+    plt.ylim([-1, 0])
 
 def print_stats(df: pd.DataFrame):
     print("head")
