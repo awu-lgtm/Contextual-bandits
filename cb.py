@@ -10,10 +10,13 @@ Cost: TypeAlias = int
 Prob: TypeAlias = float
 
 
-def get_cost(y: int, action: int):
+def get_cost(y: int, action: int, offset=-1):
     if y == action:
-        return -1
-    return 0
+        cost = 0
+    else:
+        cost = 1
+    cost += offset
+    return cost
 
 
 def to_vw_format(context: pd.Series, label: tuple[Action, Cost, Prob] = None):

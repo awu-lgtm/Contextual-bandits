@@ -1,11 +1,13 @@
 # Contextual bandits exploration
 ## Context
-Multi-armed bandits (MAB) is a problem in which a policy iteratively chooses an action from a set of k-arms. This is a partial information setting where the policy only receives feedback of the action it took. The contextual bandits problem is an extension of MAB where the policy receives a context (a set of features) before it takes an action. For example, if we're recommending products, a contextual bandits model might be given some features of a user like age and gender and recommend a product based on this.
+Multi-armed bandits (MAB) is a problem where we try to find the best action from a set of a few. In particular, a policy iteratively chooses an action and receives the cost of that action. The model works to minimize the total cost of the actions it chooses.
 
-There are two common settings in MAB: online and offline. Online bandits is when we deploy the model and it is taking actions and receiving feedback. Offline bandits is when we're testing the performance of a new model compared to an older model. Here, we have access to a logged dataset of the actions of the older model. We can use the dataset to train the new model and estimate its performance in comparison to the new model.
+Contextual bandits is an extension of MAB where the policy receives a context (a set of features) before it takes an action. For example, if we're recommending products, a contextual bandits model might be given some features of a user like age and gender and recommend a product based on this.
+
+In this analysis, we explore two common bandits settings: online and offline. Online bandits is when we deploy the model and it is taking actions and receiving feedback. Offline bandits is when we're testing the performance of a new model compared to an older model. Here, we have access to a logged dataset of the actions of the older model. We can use the dataset to train the new model and estimate its performance in comparison to the new model.
 
 ## Purpose
-In this tested different contextual bandits approaches on two different datasets and learning settings to gain confidence in using bandits through test environments. Our first test was a simulation of an online learning setting using a multi-class prediction dataset, mimicking a scenario with no historical data and limited experimentation of exploration settings. The second was an offline scenario where we have access to the actions of a past bandits dataset. Testing both approaches allowed us to gain experience in two common contextual bandits use cases.
+In this tested different contextual bandits approaches on two different datasets and learning settings to gain confidence in using bandits through test environments. Our first test was a simulation of an online learning setting using a multi-class prediction dataset, mimicking a scenario with no historical data. The second was an offline scenario where we have access to the actions of a past bandits dataset. Testing both approaches allowed us to gain experience in two common contextual bandits use cases.
 
 ## Summary of results
 In our simulated online setting, we achieved an average cost of -0.765, which is the negative of the proportion of correctly predicted actions. We can compare this to a multi-armed bandits (MAB) model, another popular approach to online learning. A perfect MAB model would only achieve -0.156 average cost, so our model has around 5x the performance. Our model also learns quickly, which is crucial for real world scenarios where faster convergence means we get better results. For example, a model that learns how to recommend products faster leads to more users seeing products that they want (and conversely less users seeing products that they don't).
@@ -48,7 +50,11 @@ After feature engineering, correlations of features were then calculated. The on
 ### Scaling
 Scaling was not used due to potential data leakage. It might be worth noting that scaling significantly decreases regret. Using `sklearn.preprocessing.RobustScaler`, the final average regret was 0.188.
 
-## Model
+## Models Tested
+We tested a variety of `Vowpal Wabbit` models to get a better sense of when certain exploration settings perform better. According to Bietti et al. we expected Greedy and RegCB to perform the best because we believe that this dataset is "easy" in the sense that `BMI_group` is likely well correlated with `NOBeyesdad`. Bietti et al. show that Greedy performs well on easy datasets while RegCB performs well in general. Intuitively, this is because a model like Open Cover
+### Greedy
+
+
 The contextual bandits model was created with `Vowpal Wabbit` `--cb_explore`. A useful addition was to set the model to `--first 100`, which tells the model to explore (select each action with uniform probability) for the first 100 steps. Afterwards, the model exploits (is greedy) for the rest of the steps. This helped prevent premature optimization that greatly increased regret. Furthermore, more complicated exploration strategies seemed to harm the model since they promote unnecessary exploration in spite of the fact that `BMI_group` and `weight` seem to be naively well associated with `NObeyesdad`.
 
 For more complex environments (more actions or features), it will likely be preferable to use a more advanced exploration strategy like Open Cover. We talk more about this in Flaws and Further Improvements.
