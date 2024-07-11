@@ -152,7 +152,7 @@ def simulate(model: Workspace, Xs: np.ndarray, ys: np.ndarray, A: list, learn=Tr
 
     if learn:
         Xs, ys = shuffle(Xs, ys)
-    for x, y in tqdm(zip(Xs, ys), total=len(Xs)):
+    for x, y in tqdm(zip(Xs, ys), total=len(Xs), leave=False):
         a, cost = simulate_once(model, x, y, A, learn)
         actions.append(a)
         costs.append(cost)
