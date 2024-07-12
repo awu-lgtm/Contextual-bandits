@@ -1,4 +1,28 @@
 # Contextual bandits exploration
+## Table of Contents
+1. [Summary](#contextual-bandits-exploration)
+    1. [Context](#context)
+    2. [Purpose](#purpose)
+    3. [Summary of results](#summary-of-results)
+2. [Simulated online setting: Multi-class prediction of obesity risk](#simulated-online-setting-multi-class-prediction-of-obesity-risk)
+    1. [Summary](#summary)
+    2. [Data](#data)
+    3. [EDA](#eda)
+    4. [Preprocessing](#preprocessing)
+    5. [Simulator](#simulator)
+    6. [Models](#models)
+    7. [Results](#results)
+    8. [Notes](#notes)
+3. [Offline setting: Open bandit dataset](#offline-setting-open-bandit-dataset)
+    1. [Summary](#summary-1)
+    2. [Data](#data-1)
+    3. [Model](#model)
+    4. [Preprocessing](#preprocessing-1)
+    5. [Training](#training)
+    6. [Off policy evaluation](#off-policy-evaluation)
+    7. [Flaws and further improvements](#flaws-and-further-improvements)
+4. [References](#references)
+
 ## Context
 Multi-armed bandits (MAB) is a problem where we try to find the best action from a set of a few. In particular, a policy iteratively chooses an action and receives the cost of that action. The model works to minimize the total cost of the actions it chooses.
 
@@ -56,7 +80,7 @@ It was difficult for us to find a contextual bandits environment readily availab
 Our simulator performs a loop through all the data points in the dataset. For each datapoint, it gives the features of the datapoint as the context to the contextual bandits model. The contextual bandits model in turn gives a probability distribution of actions. An action is sampled from the distribution as the predicted action of the model. The cost of the action is then calculated. Finally, the model learns from the result.
 
 ## Models
-We tested `Vowpal Wabbit`'s Greedy, RegCB, and Open Cover models to get a better sense of when certain exploration settings perform better. According to Bietti et al. we expected Greedy and RegCB to perform the best because we believe that this dataset is "easy" in the sense that `BMI_group` is likely well correlated with `NOBeyesdad`. Bietti et al. show that Greedy performs well on easy datasets while RegCB performs well in general. Intuitively, this is because more robust models like Open Cover, which actively encourage exploration, explore too much for easy datasets. Natural exploration from the model simply trying actions is enough. The Results section shows that Greedy performs the best but RegCB surprisingly does the worst.
+We tested `Vowpal Wabbit`'s Greedy, RegCB, and Open Cover models to get a better sense of when certain exploration settings perform better. According to Bietti et al. we expected Greedy and RegCB to perform the best because we believe that this dataset is "easy" in the sense that `BMI_group` is likely well correlated with `NOBeyesdad` [[1]](#1). Bietti et al. show that Greedy performs well on easy datasets while RegCB performs well in general. Intuitively, this is because more robust models like Open Cover, which actively encourage exploration, explore too much for easy datasets. Natural exploration from the model simply trying actions is enough. The Results section shows that Greedy performs the best but RegCB surprisingly does the worst.
 
 Specifically, we tested Greedy with no warmup, Greedy with 100 iterations of warmup, optimizing RegCB with 1e-3 mellowness, and nonuniform Open Cover with 4 covers and 0.1 psi. These are optimal hyperparameters found by Bietti et al.. We tested Greedy with warmup since no warmup fails in certain theoretical scenarios.
 
@@ -69,7 +93,7 @@ We ran each model 100 times to account for stochasticity and averaged the costs 
 
 All the models except RegCB learn quite quickly.
 
-We use final average cost as our judge of model performance, since it captures how each model balances exploration and exploitation. For this dataset, final average cost is simply the negative of the proportion of actions predicted correctly. Final average costs were -0.707, -0.698, -0.686, -0.232 for Greedy, Greedy with warmup, Open Cover, and RegCB respectively. Greedy performs the best as expected and the difference between warmup and no warmup is small. Interestingly, RegCB does very poorly in this dataset. This could be due to the dataset not meeting RegCB's assumptions. 
+We use final average cost as our judge of model performance, since it captures how each model balances exploration and exploitation. For this dataset, final average cost is simply the negative of the proportion of actions predicted correctly. Final average costs were -0.707, -0.698, -0.686, -0.232 for Greedy, Greedy with warmup, Open Cover, and RegCB respectively. Greedy performs the best as expected and the difference between warmup and no warmup is small. Interestingly, RegCB does very poorly in this dataset. This could be due to the dataset not meeting RegCB's assumptions [[1]](#1). 
 
 We can compare our results to an ideal MAB model that knows the best action (`Obesity_Type_II`) from the start. This would only achieve -0.156 cost (proportion of `Obesity_Type_II` to entire dataset), making Greedy almost 5x better. This is a significant increase and shows how important context can be.
 
@@ -123,7 +147,9 @@ One thing that stood out for us was the large difference between IPS and DR. Thi
 
 It'll also be interesting to see if there are any algorithms that handle sparse reward better and if the LAS algorithm mentioned in the first section could be used.
 
-## References
+# References
 <a id="1">[1]</a> 
+Bietti, A., Agarwal, A., & Langford, J. (2021). A contextual bandit bake-off. Journal of Machine Learning Research, 22(133), 1-49.
+<a id="2">[2]</a> 
 Agarwal, A., Hsu, D., Kale, S., Langford, J., Li, L. &amp; Schapire, R.. (2014). Taming the Monster: A Fast and Simple Algorithm for Contextual Bandits. <i>Proceedings of the 31st International Conference on Machine Learning</i>, in <i>Proceedings of Machine Learning Research</i> 32(2):1638-1646 Available from https://proceedings.mlr.press/v32/agarwalb14.html.
 
