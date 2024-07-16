@@ -93,7 +93,9 @@ The following is a brief description of the models used. We first talk about onl
 For contextual bandits, we get a context and the cost of the action we choose at that timestep. We could use these contexts and costs to build a dataset and train a supervised learning model to learn the best action based on context. However, building a new dataset and retraining a model at each timestep can be expensive, especially if we have many timesteps. Instead, we could use an online learning model which can sequentially learn from each context and cost each timestep without having to entirely retrain. 
 
 For a model that uses an online learner, we do the following each timestep. Since we don't necessarily know the best action given a context (we only know the costs of the actions we take given context), the online learner instead predicts the cost of an action on a context. Specifically, if we have online learner $f$ and get context $x_t$, take action $a_t$, and receive cost $c_t$ at timestep $t$, we minimize MSE
- $$\sum_{t=1} (f(x_t, a_t) - c_t)^2.$$ 
+
+ $$\sum_{t=1} (f(x_t, a_t) - c_t)^2.$$
+
 The action the policy chooses to explore with is the one that minimizes the cost given the timestep's context. From now on, we say that the learner "chooses" an action $a$ if $a$ minimizes the cost.
 
 A linear online learner is used for all the models. The difference is how they handle exploration to train the online learner and exploitation.
