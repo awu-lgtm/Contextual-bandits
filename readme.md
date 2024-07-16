@@ -111,7 +111,11 @@ For IPS and DR, instead of using the raw cost of our chosen action at each times
 
 ### IPS
 For timestep $t$, suppose we take action $a_t$ with probability $p_t$ and receive cost $c_t$. IPS's loss estimate for action $a$ for timestep $t$ would be
+
+
     $$ \hat c_t(a) = \frac{c_t}{p_t} 𝟙\{a = a_t\}. $$
+
+    
 Note that $\ell_t(a) = 0$ if $a \neq a_t$. It's important to note that IPS is provably unbiased. However, IPS can have high variance since $p_t$ can be small [[1]](#1).
 
 ### DR
