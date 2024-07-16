@@ -112,20 +112,22 @@ For IPS and DR, instead of using the raw cost of our chosen action at each times
 ### IPS
 For timestep $t$, suppose we take action $a_t$ with probability $p_t$ and receive cost $c_t$. IPS's loss estimate for action $a$ for timestep $t$ would be
 
-
     $$ \hat c_t(a) = \frac{c_t}{p_t} 𝟙\{a = a_t\}. $$
 
-    
 Note that $\ell_t(a) = 0$ if $a \neq a_t$. It's important to note that IPS is provably unbiased. However, IPS can have high variance since $p_t$ can be small [[1]](#1).
 
 ### DR
 DR is an extension of IPS with supervised learning to fix IPS's variance problem. This is why DR could be preferred over IPS and why Bietti et al. generally find better performance with DR over IPS. DR trains another online learner $\hat \ell_t$ which predicts the cost of an action given context. DR's estimate for action $a$ at timestep $t$ is
+
     $$ \hat c_t(a) = \frac{c_t - \hat \ell(x_t, a_t)}{p_t} 𝟙\{a = a_t\} + \hat \ell(x_t, a). $$
+    
 When $\hat \ell(x_t, a_t)$ is close to $c_t$, $c_t - \hat \ell(x_t, a_t)$ is small, helping to reduce variance [[1]](#1). Note that $\hat \ell_t$ is essentially the online learner we talked about before without loss estimation. Additionally, it is possible that $\hat c_t(a) \neq 0$ for $a \neq a_t$ unlike IPS. As with IPS, DR is an unbiased estimator of cost [[1]](#1).
 
 ### IWR
 Unlike IPS and DR, IWR directly modifies the objective function of the online learner. We reweight the squared error in MSE instead of the cost. The new objective function becomes
+
     $$ \sum_{t=1}\frac 1 {p_t}(f(x_t, a_t) - c_t)^2. $$
+
 IWR is not necessarily unbiased (it is unbiased if $p_t$ has full support but this is often not the case) [[1]](#1). 
 
 ### Estimator comparison
@@ -146,11 +148,17 @@ Interestingly, Cover with $n = 1$ is Greedy with IPS or DR estimator.
 RegCB estimates a confidence interval of the cost of each action at a timestep. It then chooses the action that has the least lower bound. The online learner is updated with the raw cost with no estimator.
 
 The lower bound $l_t$ is found by considering the minimizing estimator in a set of "good" estimators from the hypothesis class $\mathcal F$. Specifically, the lower bound is defined as
+
     $$ l_t(a) = \min_{f \in \mathcal F_t} f(x_t, a) $$
+
 where
+
     $$ \mathcal F_t = \{f \in \mathcal F: \hat R_{t-1}(f) - \min_{f \in\mathcal F} \hat R_{t-1}(f) \leq \Delta_t\} $$
+
 and 
+
     $$ \hat R_{t}(f) = \frac{1}{t} \sum^t_{i=1}(f(x_i, a_i) - \ell_i(a_i))^2. $$
+
 $\Delta_t$ is set to $C_0 \log(Kt)$ where $K$ is the number of actions and $C_0$ is a hyperparameter [[1]](#1). $F_t$ is a set of good estimators in the sense that members are at most $\Delta_t$ away from the best estimator. Calculating $l_t$ this way is practically infeasible. Instead, RegCB uses a series of approximations that Bietti et al. go over.  
 
 ### Model comparison
