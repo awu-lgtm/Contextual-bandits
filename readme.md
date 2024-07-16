@@ -159,7 +159,7 @@ and
 
 $$ \hat R_{t}(f) = \frac{1}{t} \sum^t_{i=1}(f(x_i, a_i) - \ell_i(a_i))^2. $$
 
-$\Delta_t$ is set to $C_0 \log(Kt)$ where $K$ is the number of actions and $C_0$ is a hyperparameter [[1]](#1). $ \mathcal F_t$ is a set of good estimators in the sense that members are at most $\Delta_t$ away from the best estimator. Calculating $l_t$ this way is practically infeasible. Instead, RegCB uses a series of approximations that Bietti et al. go over.  
+$\Delta_t$ is set to $C_0 \log(Kt)$ where $K$ is the number of actions and $C_0$ is a hyperparameter [[1]](#1). $\mathcal F_t$ is a set of good estimators in the sense that members are at most $\Delta_t$ away from the best estimator. Calculating $l_t$ this way is practically infeasible. Instead, RegCB uses a series of approximations that Bietti et al. go over.  
 
 ### Model comparison
 In a way, Greedy and RegCB both always exploit while Cover has explicit exploration mechanisms. As we stated before, the effectiveness of models can depend on the difficulty of the dataset, which can decide how much exploration is necessary.
